@@ -24,15 +24,16 @@ const speak = (text) => {
 // ✅ LOAD MODEL (LAYERS MODEL — CORRECT)
 async function loadModel() {
   try {
-    model = await tf.loadLayersModel("./tfjs_model/model.json", {
-      cache: "reload",
-    });
+    document.getElementById("status").innerText = "Loading model… ⏳";
+
+    model = await tf.loadLayersModel("tfjs_model/model.json");
+
     modelReady = true;
     document.getElementById("status").innerText = "Model loaded ✅";
-    console.log("✅ Model ready");
+    console.log("✅ Model loaded successfully");
   } catch (err) {
     console.error("❌ Model loading failed:", err);
-    document.getElementById("status").innerText = "Model failed to load ❌";
+    document.getElementById("status").innerText = "Model failed ❌";
   }
 }
 
