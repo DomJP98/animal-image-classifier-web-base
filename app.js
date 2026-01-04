@@ -1,6 +1,4 @@
-let model = null;
-let modelReady = false;
-
+let model;
 let webcamStream = null;
 let webcamInterval = null;
 
@@ -15,26 +13,14 @@ const CONFIDENCE_THRESHOLD = 0.7;
 
 // 🔊 Voice feedback
 const speak = (text) => {
-  if (!("speechSynthesis" in window)) return;
   const msg = new SpeechSynthesisUtterance(text);
-  speechSynthesis.cancel();
   speechSynthesis.speak(msg);
 };
 
-// ✅ LOAD MODEL (LAYERS MODEL — CORRECT)
+// Load model
 async function loadModel() {
-  try {
-    document.getElementById("status").innerText = "Loading model… ⏳";
-
-    model = await tf.loadLayersModel("tfjs_model/model.json");
-
-    modelReady = true;
-    document.getElementById("status").innerText = "Model loaded ✅";
-    console.log("✅ Model loaded successfully");
-  } catch (err) {
-    console.error("❌ Model loading failed:", err);
-    document.getElementById("status").innerText = "Model failed ❌";
-  }
+  model = await tf.loadGraphModel("./tfjs_model/model.json");
+  document.getElementById("status").innerText = "Model loaded ✅";
 }
 
 // Preprocess
@@ -47,13 +33,8 @@ function preprocess(img) {
     .expandDims();
 }
 
-// ✅ SAFE PREDICT
+// Predict
 async function predict(img) {
-  if (!modelReady || !model) {
-    console.warn("⏳ Model not ready");
-    return;
-  }
-
   const tensor = preprocess(img);
   const preds = model.predict(tensor);
   const probs = preds.dataSync();
@@ -77,36 +58,27 @@ async function predict(img) {
   tf.dispose([tensor, preds]);
 }
 
-// 📁 Image upload
+// Image upload
 document.getElementById("imageUpload").addEventListener("change", (e) => {
   stopWebcam();
 
-  const file = e.target.files[0];
-  if (!file) return;
-
   const img = new Image();
   img.onload = () => predict(img);
-  img.src = URL.createObjectURL(file);
+  img.src = URL.createObjectURL(e.target.files[0]);
 
   const preview = document.getElementById("preview");
   preview.src = img.src;
   preview.hidden = false;
 });
 
-// 🎥 Webcam toggle
+// Webcam toggle
 document.getElementById("webcamBtn").onclick = async () => {
-  if (!modelReady) {
-    alert("Model still loading. Please wait.");
-    return;
-  }
-
   if (!webcamStream) {
     webcamStream = await navigator.mediaDevices.getUserMedia({ video: true });
     const video = document.getElementById("webcam");
 
     video.srcObject = webcamStream;
     video.hidden = false;
-    await video.play();
 
     document.getElementById("snapshotBtn").hidden = false;
     document.getElementById("webcamBtn").innerText = "Stop Webcam";
@@ -117,10 +89,8 @@ document.getElementById("webcamBtn").onclick = async () => {
   }
 };
 
-// 📸 Snapshot
+// Snapshot
 document.getElementById("snapshotBtn").onclick = () => {
-  if (!modelReady) return;
-
   const video = document.getElementById("webcam");
   const canvas = document.createElement("canvas");
 
@@ -137,7 +107,7 @@ document.getElementById("snapshotBtn").onclick = () => {
   preview.hidden = false;
 };
 
-// 🛑 Stop webcam
+// Stop webcam
 function stopWebcam() {
   if (webcamStream) {
     webcamStream.getTracks().forEach((t) => t.stop());
@@ -150,22 +120,21 @@ function stopWebcam() {
   }
 }
 
-// 🕘 History
+// History
 function addHistory(text) {
   const li = document.createElement("li");
   li.innerText = text;
   document.getElementById("historyList").prepend(li);
 }
 
-// 🧹 Reset history
+// Reset history
 document.getElementById("clearHistory").onclick = () => {
   document.getElementById("historyList").innerHTML = "";
 };
 
-// 🚀 Init
 loadModel();
 
-// 🔧 Service Worker
-// if ("serviceWorker" in navigator) {
-//   navigator.serviceWorker.register("./service-worker.js");
-// }
+// Register service worker
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+}
