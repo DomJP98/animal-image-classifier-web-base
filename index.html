@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Animal Classifier</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0"></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <h2>🐾 Animal Classifier</h2>
+
+      <p id="status">Loading model…</p>
+
+      <input type="file" id="imageUpload" accept="image/*" />
+
+      <button id="webcamBtn">Start Webcam</button>
+      <button id="snapshotBtn" hidden>📸 Take Snapshot</button>
+
+      <video id="webcam" autoplay playsinline hidden></video>
+      <img id="preview" hidden />
+
+      <p id="result"></p>
+
+      <div class="controls">
+        <button id="clearHistory">🗑 Reset History</button>
+      </div>
+
+      <ul id="historyList"></ul>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
